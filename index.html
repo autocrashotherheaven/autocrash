@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synchronized Video Gallery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .video-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            font-size: 12px;
+            opacity: 0.6;
+            font-family: monospace;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <div id="video-embed"></div>
+        <div class="info">
+            <div>Current time (GMT): <span id="gmt-time"></span></div>
+            <div>Video progress: <span id="video-progress"></span></div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURATION
+        const VIMEO_VIDEO_ID = '372818960'; // Replace with your Vimeo video ID
+        const VIDEO_DURATION = 1433; // Duration in seconds (10 minutes) - set this to your video's duration
+
+        // Calculate the current playback position based on GMT
+        function getVideoStartTime() {
+            const now = new Date();
+            
+            // Get seconds since midnight GMT
+            const gmtMidnight = new Date(now.toLocaleString('en-US', { timeZone: 'GMT' }));
+            gmtMidnight.setHours(0, 0, 0, 0);
+            
+            const secondsSinceMidnight = Math.floor((now - gmtMidnight) / 1000);
+            
+            // Calculate position in the video loop
+            const videoPosition = secondsSinceMidnight % VIDEO_DURATION;
+            
+            return videoPosition;
+        }
+
+        // Initialize Vimeo player
+        function initializePlayer() {
+            const startTime = getVideoStartTime();
+            const embed = document.getElementById('video-embed');
+            
+            // Create the iframe with autoplay and loop parameters
+            embed.innerHTML = `
+                <iframe
+                    src="https://player.vimeo.com/video/${VIMEO_VIDEO_ID}?autoplay=1&loop=1&start=${Math.floor(startTime)}"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowfullscreen
+                ></iframe>
+            `;
+            
+            console.log(`Video starting at ${Math.floor(startTime)}s (GMT-based position)`);
+        }
+
+        // Update the displayed time info
+        function updateTimeInfo() {
+            const now = new Date();
+            document.getElementById('gmt-time').textContent = now.toUTCString();
+            
+            const videoPosition = getVideoStartTime();
+            const minutes = Math.floor(videoPosition / 60);
+            const seconds = Math.floor(videoPosition % 60);
+            document.getElementById('video-progress').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            initializePlayer();
+            updateTimeInfo();
+            setInterval(updateTimeInfo, 1000);
+        });
+    </script>
+</body>
+</html>
