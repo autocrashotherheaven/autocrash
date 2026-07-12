@@ -48,16 +48,23 @@
 </head>
 <body>
     <div class="video-container">
-        <div id="video-embed"></div>
+        <div id="video-embed">
+            <iframe
+                id="vimeo-player"
+                src="https://player.vimeo.com/video/372818960?h=&autoplay=0"
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowfullscreen
+            ></iframe>
+        </div>
         <div class="info">
             <div>Current time (GMT): <span id="gmt-time"></span></div>
             <div>Video progress: <span id="video-progress"></span></div>
         </div>
     </div>
 
+    <script src="https://player.vimeo.com/api/player.js"></script>
     <script>
         // CONFIGURATION
-        const VIMEO_VIDEO_ID = '372818960'; // Replace with your Vimeo video ID
         const VIDEO_DURATION = 1433; // Duration in seconds (10 minutes) - set this to your video's duration
 
         // Calculate the current playback position based on GMT
@@ -76,21 +83,29 @@
             return videoPosition;
         }
 
-        // Initialize Vimeo player
+        // Initialize Vimeo player with API
         function initializePlayer() {
-            const startTime = getVideoStartTime();
-            const embed = document.getElementById('video-embed');
-            
-            // Create the iframe with autoplay and loop parameters
-            embed.innerHTML = `
-                <iframe
-                    src="https://player.vimeo.com/video/${VIMEO_VIDEO_ID}?autoplay=1&loop=1&start=${Math.floor(startTime)}"
-                    allow="autoplay; fullscreen; picture-in-picture"
-                    allowfullscreen
-                ></iframe>
-            `;
-            
-            console.log(`Video starting at ${Math.floor(startTime)}s (GMT-based position)`);
+            const iframe = document.getElementById('vimeo-player');
+            const player = new Vimeo.Player(iframe);
+
+            player.ready().then(() => {
+                const startTime = getVideoStartTime();
+                console.log(`Setting video to start at ${Math.floor(startTime)}s (GMT-based position)`);
+                
+                // Set the start time and play
+                player.setCurrentTime(startTime).then(() => {
+                    player.play();
+                }).catch(err => {
+                    console.error('Error setting playback time:', err);
+                });
+            });
+
+            // Set up looping
+            player.on('ended', () => {
+                player.setCurrentTime(0).then(() => {
+                    player.play();
+                });
+            });
         }
 
         // Update the displayed time info
