@@ -17,7 +17,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #000;
+            background: transparent;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
 
@@ -32,20 +32,7 @@
             width: 100%;
             height: 100%;
             border: none;
-        }
-
-        .info {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            color: white;
-            font-size: 12px;
-            opacity: 0.6;
-            font-family: monospace;
-            pointer-events: none;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 4px;
+            display: block;
         }
     </style>
 </head>
@@ -58,11 +45,6 @@
                 allow="autoplay; fullscreen; picture-in-picture"
                 allowfullscreen
             ></iframe>
-        </div>
-        <div class="info">
-            <div>Current time (GMT): <span id="gmt-time"></span></div>
-            <div>Video progress: <span id="video-progress"></span></div>
-            <div>Status: <span id="status">Loading...</span></div>
         </div>
     </div>
 
@@ -94,17 +76,12 @@
 
             // Wait for the video to be ready and have duration info
             player.on('loadedmetadata', () => {
-                console.log('Video metadata loaded');
                 const startTime = getVideoStartTime();
-                console.log(`Attempting to set video to ${Math.floor(startTime)}s`);
                 
                 player.setCurrentTime(startTime).then(() => {
-                    console.log('Successfully set current time');
-                    document.getElementById('status').textContent = `Seeking to ${Math.floor(startTime)}s...`;
                     player.play();
                 }).catch(err => {
                     console.error('Error setting playback time:', err);
-                    document.getElementById('status').textContent = 'Error: ' + err.message;
                 });
             });
 
@@ -113,40 +90,22 @@
                 const startTime = getVideoStartTime();
                 player.getCurrentTime().then(currentTime => {
                     if (currentTime < 1) {
-                        console.log('Resetting to GMT time on play');
-                        player.setCurrentTime(startTime).then(() => {
-                            document.getElementById('status').textContent = `Playing from ${Math.floor(startTime)}s`;
-                        });
+                        player.setCurrentTime(startTime);
                     }
                 });
             });
 
             // Set up looping
             player.on('ended', () => {
-                console.log('Video ended, restarting');
                 player.setCurrentTime(0).then(() => {
                     player.play();
                 });
             });
         }
 
-        // Update the displayed time info
-        function updateTimeInfo() {
-            const now = new Date();
-            document.getElementById('gmt-time').textContent = now.toUTCString();
-            
-            const videoPosition = getVideoStartTime();
-            const minutes = Math.floor(videoPosition / 60);
-            const seconds = Math.floor(videoPosition % 60);
-            document.getElementById('video-progress').textContent = 
-                `${minutes}:${seconds.toString().padStart(2, '0')}`;
-        }
-
         // Initialize on load
         window.addEventListener('load', () => {
             initializePlayer();
-            updateTimeInfo();
-            setInterval(updateTimeInfo, 1000);
         });
     </script>
 </body>
