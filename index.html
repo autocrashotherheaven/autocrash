@@ -45,7 +45,7 @@
         <div id="video-embed">
             <iframe
                 id="vimeo-player"
-                src="https://player.vimeo.com/video/1213494837?autoplay=0&muted=1"
+                src="https://player.vimeo.com/video/1213494837?autoplay=1&muted=1"
                 allow="autoplay; fullscreen; picture-in-picture"
                 allowfullscreen
             ></iframe>
@@ -55,47 +55,33 @@
     <script src="https://player.vimeo.com/api/player.js"></script>
     <script>
         // CONFIGURATION
-        const VIDEO_DURATION = 3783; // Duration in seconds (1h03m03s) - set this to your video's duration
+        const VIDEO_DURATION = 3783; // Duration in seconds
 
         // Calculate the current playback position based on GMT
         function getVideoStartTime() {
             const now = new Date();
-            
-            // Get seconds since midnight GMT
             const gmtMidnight = new Date(now.toLocaleString('en-US', { timeZone: 'GMT' }));
             gmtMidnight.setHours(0, 0, 0, 0);
-            
             const secondsSinceMidnight = Math.floor((now - gmtMidnight) / 1000);
-            
-            // Calculate position in the video loop
-            const videoPosition = secondsSinceMidnight % VIDEO_DURATION;
-            
-            return videoPosition;
+            return secondsSinceMidnight % VIDEO_DURATION;
         }
 
-        // Initialize Vimeo player with API
+        // Initialize player
         function initializePlayer() {
             const iframe = document.getElementById('vimeo-player');
             const player = new Vimeo.Player(iframe);
+            const startTime = getVideoStartTime();
 
-            player.ready().then(() => {
-                console.log('Player ready');
-                const startTime = getVideoStartTime();
-                console.log('Setting start time to:', startTime);
-                
-                player.setCurrentTime(startTime).then(() => {
-                    player.setMuted(true);
-                    player.play().catch(err => {
-                        console.error('Play error:', err);
-                    });
-                }).catch(err => {
-                    console.error('Error setting playback time:', err);
+            // Quick seek on play start
+            player.on('play', () => {
+                player.getCurrentTime().then(currentTime => {
+                    if (currentTime < 1) {
+                        player.setCurrentTime(startTime);
+                    }
                 });
-            }).catch(err => {
-                console.error('Player ready error:', err);
             });
 
-            // Set up looping
+            // Loop at end
             player.on('ended', () => {
                 player.setCurrentTime(0).then(() => {
                     player.play();
@@ -103,14 +89,7 @@
             });
         }
 
-        // Initialize after Vimeo API is loaded
-        if (window.Vimeo) {
-            initializePlayer();
-        } else {
-            window.addEventListener('load', () => {
-                setTimeout(initializePlayer, 500);
-            });
-        }
+        window.addEventListener('load', initializePlayer);
     </script>
 </body>
 </html>
