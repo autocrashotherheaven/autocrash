@@ -1,10 +1,8 @@
-The issue is likely that the Vimeo API isn't loading properly or there's a problem with how the player is being initialized. Let me add error handling and ensure the player is properly waiting for the API:
-
-```html name=video-gallery.html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://player.vimeo.com https://f.vimeocdn.com 'unsafe-inline'; style-src 'self' https://f.vimeocdn.com 'unsafe-inline'; frame-src 'self' https://player.vimeo.com;">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Synchronized Video Gallery</title>
     <style>
@@ -116,12 +114,3 @@ The issue is likely that the Vimeo API isn't loading properly or there's a probl
     </script>
 </body>
 </html>
-```
-
-Key changes:
-1. Changed `autoplay=0` in the iframe (removed autoplay from URL, we'll control it via API)
-2. Used `player.ready()` instead of `loadedmetadata` - more reliable for Vimeo
-3. Added better error handling and console logging so you can see what's happening
-4. Added a delay before initializing to ensure the API is fully loaded
-
-Check your browser console (F12 → Console tab) and let me know what error messages you see. That will help us diagnose the issue.
