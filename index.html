@@ -38,28 +38,6 @@
             border: none;
             display: block;
         }
-
-        .mute-button {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            z-index: 100;
-            transition: background 0.2s;
-        }
-
-        .mute-button:hover {
-            background: rgba(255, 255, 255, 1);
-        }
     </style>
 </head>
 <body>
@@ -67,14 +45,13 @@
         <div id="video-embed">
             <iframe
                 id="vimeo-player"
-                src="https://player.vimeo.com/video/1213494837?autoplay=1&muted=1&controls=0"
+                src="https://player.vimeo.com/video/1213494837?autoplay=1&muted=1"
                 allow="autoplay; fullscreen; accelerometer; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen
                 webkitallowfullscreen
                 mozallowfullscreen
             ></iframe>
         </div>
-        <button class="mute-button" id="muteButton">🔇</button>
     </div>
 
     <script src="https://player.vimeo.com/api/player.js"></script>
@@ -95,16 +72,7 @@
         function initializePlayer() {
             const iframe = document.getElementById('vimeo-player');
             const player = new Vimeo.Player(iframe);
-            const muteButton = document.getElementById('muteButton');
             const startTime = getVideoStartTime();
-            let isMuted = true;
-
-            // Mute button toggle
-            muteButton.addEventListener('click', () => {
-                isMuted = !isMuted;
-                player.setMuted(isMuted);
-                muteButton.textContent = isMuted ? '🔇' : '🔊';
-            });
 
             // Quick seek on play start
             player.on('play', () => {
